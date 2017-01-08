@@ -1,0 +1,32 @@
+<?php
+
+/** Temp listing forms that we might want to only allow **/
+$allowed_formids = array(
+  'view_edit_form',
+  'block_content_.*?_edit_form',
+  'node_.*?_form'
+);
+
+/**
+ * Implements hook_form_alter().
+ */
+function autolivereload_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+	/** List of form ids that we should exclude from being livereloaded **/
+    $exclude = array('view_preview_form','views_form_content_page_1','views_exposed_form');
+    /** List of actions buttons to hook to **/
+    $actions = array('submit','publish','save');
+    if(!in_array($form_id, $exclude)) {
+      foreach($actions as $action) {
+        if(is_array($form['actions'][$action]['#submit'])) {
+          array_unshift($form['actions'][$action]['#submit'] , 'autolivereload_form_submit');
+        }
+      }
+    }
+}
+
+function autolivereload_form_submit($form, \Drupal\Core\Form\FormStateInterface $form_state) {
+  /** For now we use a livereload.ts file to watch for updates **/
+  /** @todo Ideally this should communicate directly to livereload protocol and init browser reload on the client side **/
+  /** @todo Only excute this once per page/runtime **/
+  $file = file_save_data(\Drupal::service('date.formatter')->format(time(),'long'),'public://livereload.ts', FILE_EXISTS_REPLACE);
+}

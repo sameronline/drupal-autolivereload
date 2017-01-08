@@ -1,0 +1,5 @@
+name: Auto LiveReload
+description: Auto LiveReload
+type: module
+package: Development
+core: 8.x
